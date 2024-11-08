@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Notas</title>
+</head>
+<body>
+    <h1>Cadastro de Notas</h1>
+
+    <form id="formCadastro">
+        <label for="nome_aluno">Nome do Aluno:</label>
+        <input type="text" id="nome_aluno" name="nome_aluno" required><br><br>
+
+        <label for="nome_professor">Nome do Professor:</label>
+        <input type="text" id="nome_professor" name="nome_professor" required><br><br>
+
+        <label for="nota">Nota:</label>
+        <input type="number" id="nota" name="nota" step="0.1" required><br><br>
+
+        <label for="materia">Matéria:</label>
+        <input type="text" id="materia" name="materia" required><br><br>
+
+        <button type="submit">Cadastrar Nota</button>
+    </form>
+
+    <h2>Notas Cadastradas</h2>
+    <div id="notasContainer"></div>
+
+    <script>
+        async function carregarNotas() {
+            try {
+                const resposta = await fetch("http://localhost:3031/mostrar");
+                const notas = await resposta.json();
+                const container = document.getElementById("notasContainer");
+                container.innerHTML = "";
+                notas.forEach((nota) => {
+                    const notaDiv = document.createElement("div");
+                    notaDiv.innerHTML = `<p>ID: ${nota.id}, Aluno: ${nota.nome_aluno}, Professor: ${nota.nome_professor}, Nota: ${nota.nota}, Matéria: ${nota.materia}</p>`;
+                    container.appendChild(notaDiv);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar notas:", error);
+            }
+        }
+
+        document.getElementById("formCadastro").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const nome_aluno = document.getElementById("nome_aluno").value;
+            const nome_professor = document.getElementById("nome_professor").value;
+            const nota = parseFloat(document.getElementById("nota").value);
+            const materia = document.getElementById("materia").value;
+
+            const dados = { nome_aluno, nome_professor, nota, materia };
+
+            try {
+                const resposta = await fetch("http://localhost:3031/salvar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dados),
+                });
+
+                const resultado = await resposta.json();
+                alert(resultado.resposta);
+                carregarNotas();
+            } catch (error) {
+                console.error("Erro ao cadastrar nota:", error);
+            }
+        });
+
+        carregarNotas();
+    </script>
+</body>
+</html>
